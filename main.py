@@ -1,5 +1,6 @@
 import streamlit as st
 from calculator import RedisCalculator
+import altair as alt
 
 def validate_input(value, min_value, max_value, field_name):
     """Validate numeric input within range"""
@@ -142,6 +143,32 @@ def main():
             - Transaction rate
             - Processing overhead
             """)
+
+        # Memory usage simulation
+        st.subheader("Memory Usage Simulation (24 hours)")
+        df = RedisCalculator.simulate_memory_usage(
+            avg_size_bytes, num_keys, tps, ttl, eviction_policy
+        )
+
+        # Create memory usage chart
+        chart = alt.Chart(df).mark_line().encode(
+            x=alt.X('timestamp', title='Time (hours)'),
+            y=alt.Y('memory', title='Memory Usage (bytes)'),
+            tooltip=['timestamp', 'memory']
+        ).properties(
+            width=800,
+            height=400
+        ).interactive()
+
+        st.altair_chart(chart)
+
+        st.caption("""
+        This simulation shows estimated memory usage over time based on:
+        - Initial data size
+        - Transaction rate (TPS)
+        - TTL settings
+        - Selected eviction policy
+        """)
 
         # Additional recommendations
         st.subheader("Configuration Recommendations")
