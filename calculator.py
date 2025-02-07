@@ -94,3 +94,21 @@ class RedisCalculator:
         })
 
         return df
+
+    @staticmethod
+    def analyze_memory_trend(df):
+        """Analyze the memory usage trend from simulation data"""
+        memory_values = df['memory'].values
+        start_memory = memory_values[0]
+        end_memory = memory_values[-1]
+
+        # Calculate percentage change
+        percent_change = ((end_memory - start_memory) / start_memory) * 100
+
+        # Determine trend
+        if abs(percent_change) < 1:  # Less than 1% change
+            return "stable", percent_change
+        elif percent_change > 0:
+            return "growing", percent_change
+        else:
+            return "shrinking", percent_change

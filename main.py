@@ -106,11 +106,18 @@ def main():
         # Display results
         st.header("Deployment Requirements")
 
-        col1, col2, col3 = st.columns(3)
+        # Get 24-hour projection from simulation
+        df = RedisCalculator.simulate_memory_usage(
+            avg_size_bytes, num_keys, tps, ttl, eviction_policy
+        )
+        projected_memory = df['memory'].iloc[-1]  # Last value in simulation
+        trend, percent_change = RedisCalculator.analyze_memory_trend(df)
+
+        col1, col2, col3, col4 = st.columns(4)
 
         with col1:
             st.metric(
-                label="Memory Required",
+                label="Initial Memory Required",
                 value=RedisCalculator.format_memory_size(memory_bytes)
             )
             st.info("""
@@ -122,6 +129,20 @@ def main():
 
         with col2:
             st.metric(
+                label="Projected Memory (24h)",
+                value=RedisCalculator.format_memory_size(projected_memory),
+                delta=f"{percent_change:.1f}%" if trend != "stable" else "stable"
+            )
+            st.info(f"""
+            Memory trend: {trend.upper()}
+            Based on:
+            - Current TPS
+            - TTL settings
+            - Eviction policy
+            """)
+
+        with col3:
+            st.metric(
                 label="Estimated Latency",
                 value=f"{latency:.2f} ms"
             )
@@ -132,7 +153,7 @@ def main():
             - Transaction load
             """)
 
-        with col3:
+        with col4:
             st.metric(
                 label="Recommended CPU Cores",
                 value=f"{cpu_cores}"
