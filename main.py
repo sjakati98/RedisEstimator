@@ -150,11 +150,17 @@ def main():
             avg_size_bytes, num_keys, tps, ttl, eviction_policy
         )
 
+        # Convert memory from bytes to MB for visualization
+        df['memory_mb'] = df['memory'] / (1024 * 1024)
+
         # Create memory usage chart
         chart = alt.Chart(df).mark_line().encode(
             x=alt.X('timestamp', title='Time (hours)'),
-            y=alt.Y('memory', title='Memory Usage (bytes)'),
-            tooltip=['timestamp', 'memory']
+            y=alt.Y('memory_mb', title='Memory Usage (MB)'),
+            tooltip=[
+                alt.Tooltip('timestamp', title='Time (hours)', format='.1f'),
+                alt.Tooltip('memory_mb', title='Memory (MB)', format='.2f')
+            ]
         ).properties(
             width=800,
             height=400
