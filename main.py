@@ -146,6 +146,23 @@ def main():
 
         # Memory usage simulation
         st.subheader("Memory Usage Simulation (24 hours)")
+
+        st.info("""
+        This graph simulates how your Redis memory usage may change over the next 24 hours based on:
+        - Your initial data (shown as "Memory Required" above)
+        - New keys being added at your specified TPS rate
+        - Keys being removed based on TTL expiration
+        - Your selected eviction policy
+
+        The shape of this graph may differ from the initial memory requirement because it shows the
+        dynamic behavior of your Redis instance over time, while the "Memory Required" metric shows
+        your immediate memory needs for the current data.
+
+        📈 Rising curve: More keys being added than removed
+        📉 Falling curve: Keys being expired/evicted faster than added
+        ➡️ Flat line: Equilibrium between new and removed keys
+        """)
+
         df = RedisCalculator.simulate_memory_usage(
             avg_size_bytes, num_keys, tps, ttl, eviction_policy
         )
