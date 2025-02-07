@@ -1,6 +1,8 @@
 import streamlit as st
 from calculator import RedisCalculator
 import altair as alt
+import pandas as pd
+from io import StringIO
 
 def validate_input(value, min_value, max_value, field_name):
     """Validate numeric input within range"""
@@ -213,6 +215,64 @@ def main():
         - TTL settings
         - Selected eviction policy
         """)
+
+        # Export to CSV section
+        st.subheader("Export Results")
+
+        # Create a DataFrame with the requirements
+        requirements_df = pd.DataFrame({
+            'Metric': [
+                'Initial Memory Required',
+                'Projected Memory (24h)',
+                'Memory Trend',
+                'Memory Change',
+                'Estimated Latency (ms)',
+                'Recommended CPU Cores',
+                'Average Object Size',
+                'Number of Keys',
+                'TPS',
+                'TTL (seconds)',
+                'Eviction Policy'
+            ],
+            'Value': [
+                RedisCalculator.format_memory_size(memory_bytes),
+                RedisCalculator.format_memory_size(projected_memory),
+                trend.upper(),
+                f"{percent_change:.1f}%",
+                f"{latency:.2f}",
+                str(cpu_cores),
+                f"{avg_size} {size_unit}",
+                str(num_keys),
+                str(tps),
+                str(ttl),
+                eviction_policy
+            ]
+        })
+
+        # Prepare the memory simulation data
+        simulation_df = df.copy()
+        simulation_df.columns = ['Time (hours)', 'Memory (bytes)', 'Memory (MB)']
+
+        # Create a buffer to write the CSV
+        buffer = StringIO()
+
+        # Write requirements
+        buffer.write("Redis Deployment Requirements\n")
+        requirements_df.to_csv(buffer, index=False)
+
+        buffer.write("\n\nMemory Usage Simulation Data\n")
+        simulation_df.to_csv(buffer, index=False)
+
+        # Convert buffer to bytes for download
+        csv_contents = buffer.getvalue()
+
+        st.download_button(
+            label="Download Results as CSV",
+            data=csv_contents,
+            file_name="redis_deployment_analysis.csv",
+            mime="text/csv",
+            help="Download the deployment requirements and memory simulation data"
+        )
 
         # Additional recommendations
         st.subheader("Configuration Recommendations")
